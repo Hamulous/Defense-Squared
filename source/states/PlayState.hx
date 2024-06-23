@@ -7,17 +7,31 @@ import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.ui.FlxButton;
 import flixel.math.FlxPoint;
+import flixel.util.FlxSpriteUtil;
 import objects.*;
 
 class PlayState extends FlxState {
     private var bloons:FlxTypedGroup<Bloon>;
-    private var towers:FlxTypedGroup<Tower>;
+    private var towers:FlxTypedGroup<Dynamic>; // Updated to hold different tower types
     private var projectiles:FlxTypedGroup<Projectile>;
     private var boomerangProjectiles:FlxTypedGroup<BoomerangProjectile>;
     private var waypoints:Array<FlxPoint>;
 
     override public function create():Void {
         super.create();
+
+        // Define waypoints
+        waypoints = [
+            new FlxPoint(100, 300),
+            new FlxPoint(300, 300),
+            new FlxPoint(300, 100),
+            new FlxPoint(500, 100),
+            new FlxPoint(500, 300),
+            new FlxPoint(700, 300)
+        ];
+
+        // Draw waypoints and lines between them
+        drawWaypointsAndLines();
 
         // Initialize groups
         bloons = new FlxTypedGroup<Bloon>();
@@ -30,16 +44,6 @@ class PlayState extends FlxState {
         add(projectiles);
         add(boomerangProjectiles);
 
-        // Define waypoints
-        waypoints = [
-            new FlxPoint(100, 300),
-            new FlxPoint(300, 300),
-            new FlxPoint(300, 100),
-            new FlxPoint(500, 100),
-            new FlxPoint(500, 300),
-            new FlxPoint(700, 300)
-        ];
-
         // Add some bloons for testing
         for (i in 0...5) {
             var bloon = new Bloon(waypoints, 0);
@@ -48,11 +52,11 @@ class PlayState extends FlxState {
         }
 
         // Add a tower
-        var tower = new Tower(400, 300, projectiles, false);
-        towers.add(tower);
+        //var tower = new Tower(400, 300, projectiles, 0);
+        //towers.add(tower);
 
-        var boomerangTower = new Tower(400, 700, boomerangProjectiles, true);
-        towers.add(boomerangTower);
+        //var boomerangTower = new Tower(400, 700, boomerangProjectiles, 1);
+        //towers.add(boomerangTower);
     }
 
     override public function update(elapsed:Float):Void {
@@ -61,8 +65,8 @@ class PlayState extends FlxState {
         // Add a button to add towers
         if (FlxG.mouse.justPressed)
         {
-            var tower = new Tower(FlxG.mouse.x, FlxG.mouse.y, projectiles, false);
-            towers.add(tower);
+            var spreadTower = new SpreadTower(FlxG.mouse.x, FlxG.mouse.y, projectiles);
+            towers.add(spreadTower);
         } else if (FlxG.mouse.justPressedRight) {
             var boomerangTower = new Tower(FlxG.mouse.x, FlxG.mouse.y, boomerangProjectiles, true);
             towers.add(boomerangTower);
@@ -71,6 +75,21 @@ class PlayState extends FlxState {
         // Check for collisions between towers and bloons
         for (tower in towers) {
             tower.checkCollision(bloons, elapsed);
+        }
+    }
+
+    private function drawWaypointsAndLines():Void {
+        for (i in 0...waypoints.length - 1) {
+            var line:FlxSprite = new FlxSprite();
+            line.makeGraphic(FlxG.width, FlxG.height, FlxColor.TRANSPARENT);
+            FlxSpriteUtil.drawLine(line, waypoints[i].x, waypoints[i].y, waypoints[i + 1].x, waypoints[i + 1].y, {thickness:24, color:0xffffffff}, {smoothing:true});
+            add(line);
+        }
+
+        for (point in waypoints) {
+            var waypoint:FlxSprite = new FlxSprite(point.x - 2, point.y - 2);
+            waypoint.makeGraphic(4, 4, FlxColor.GREEN);
+            add(waypoint);
         }
     }
 }
