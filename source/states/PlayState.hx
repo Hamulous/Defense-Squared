@@ -13,6 +13,7 @@ class PlayState extends FlxState {
     private var bloons:FlxTypedGroup<Bloon>;
     private var towers:FlxTypedGroup<Tower>;
     private var projectiles:FlxTypedGroup<Projectile>;
+    private var boomerangProjectiles:FlxTypedGroup<BoomerangProjectile>;
     private var waypoints:Array<FlxPoint>;
 
     override public function create():Void {
@@ -22,10 +23,12 @@ class PlayState extends FlxState {
         bloons = new FlxTypedGroup<Bloon>();
         towers = new FlxTypedGroup<Tower>();
         projectiles = new FlxTypedGroup<Projectile>();
+        boomerangProjectiles = new FlxTypedGroup<BoomerangProjectile>();
 
         add(bloons);
         add(towers);
         add(projectiles);
+        add(boomerangProjectiles);
 
         // Define waypoints
         waypoints = [
@@ -45,8 +48,11 @@ class PlayState extends FlxState {
         }
 
         // Add a tower
-        var tower = new Tower(400, 300, projectiles);
+        var tower = new Tower(400, 300, projectiles, false);
         towers.add(tower);
+
+        var boomerangTower = new Tower(400, 700, boomerangProjectiles, true);
+        towers.add(boomerangTower);
     }
 
     override public function update(elapsed:Float):Void {
@@ -55,8 +61,11 @@ class PlayState extends FlxState {
         // Add a button to add towers
         if (FlxG.mouse.justPressed)
         {
-            var tower = new Tower(FlxG.mouse.x, FlxG.mouse.y, projectiles);
+            var tower = new Tower(FlxG.mouse.x, FlxG.mouse.y, projectiles, false);
             towers.add(tower);
+        } else if (FlxG.mouse.justPressedRight) {
+            var boomerangTower = new Tower(FlxG.mouse.x, FlxG.mouse.y, boomerangProjectiles, true);
+            towers.add(boomerangTower);
         }
 
         // Check for collisions between towers and bloons
