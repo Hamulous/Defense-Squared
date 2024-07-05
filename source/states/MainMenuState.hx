@@ -14,8 +14,9 @@ class MainMenuState extends FlxState
     var menuItem:FlxText;
     var optionShit:Array<String> = [
 		'Play',
-        'Settings',
+		'LeaderBoard',
 		'Credits',
+        'Settings',
 		'Quit'
 	];
 
