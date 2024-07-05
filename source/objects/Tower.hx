@@ -7,9 +7,12 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 
 class Tower extends FlxSprite {
     public var fireRate:Float = 1.0; // Time in seconds between shots
+    public var rechargeTime:Float = 2.0; // Recharge time for the boomerang tower
     private var timeSinceLastShot:Float = 0;
     private var projectiles:FlxTypedGroup<Dynamic>; // Accept both types of projectiles
     private var isBoomerang:Bool;
+    private var activeBoomerang:BoomerangProjectile = null;
+    private var recharging:Bool = false;
 
     public function new(X:Float, Y:Float, projectilesGroup:FlxTypedGroup<Dynamic>, boomerang:Bool) {
         super(X, Y);
@@ -25,13 +28,40 @@ class Tower extends FlxSprite {
     public function checkCollision(bloons:FlxTypedGroup<Bloon>, elapsed:Float):Void {
         timeSinceLastShot += elapsed;
 
-        if (timeSinceLastShot >= fireRate) {
+        if (isBoomerang) {  
+            if (activeBoomerang != null && activeBoomerang.returned) {
+                activeBoomerang = null;
+                recharging = true;
+                timeSinceLastShot = 0;
+            }
+
+            if (recharging && timeSinceLastShot >= rechargeTime) {
+                recharging = false;
+            }
+        }
+
+        if (!recharging && timeSinceLastShot >= fireRate && (!isBoomerang || activeBoomerang == null)) {
+            var target:Bloon = findClosestBloon(bloons);
+            if (!isBoomerang) {
+                if (target != null && calculateDistance(new FlxPoint(x, y), target) < 100) {
+                    shoot(target);
+                    timeSinceLastShot = 0;
+                } 
+            } else {
+                if (target != null) {
+                    shoot(target);
+                    timeSinceLastShot = 0;
+                } 
+            }
+        }
+
+        /*if (!recharging && timeSinceLastShot >= fireRate && (!isBoomerang || activeBoomerang == null)) {
             var target:Bloon = findClosestBloon(bloons);
             if (target != null && calculateDistance(new FlxPoint(x, y), target) < 100) {
                 shoot(target);
                 timeSinceLastShot = 0;
             }
-        }
+        }*/
     }
 
     private function findClosestBloon(bloons:FlxTypedGroup<Bloon>):Bloon {
@@ -39,10 +69,12 @@ class Tower extends FlxSprite {
         var closestDist:Float = Math.POSITIVE_INFINITY;
         
         for (bloon in bloons) {
-            var dist:Float = calculateDistance(new FlxPoint(x, y), bloon);
-            if (dist < closestDist) {
-                closestDist = dist;
-                closest = bloon;
+            if (bloon.exists) {
+                var dist:Float = calculateDistance(new FlxPoint(x, y), bloon);
+                if (dist < closestDist) {
+                    closestDist = dist;
+                    closest = bloon;
+                }
             }
         }
         
@@ -58,9 +90,10 @@ class Tower extends FlxSprite {
     private function shoot(target:Bloon):Void {
         var projectile:Dynamic;
         if (isBoomerang) {
-            projectile = new BoomerangProjectile(x, y, target);
+            activeBoomerang = new BoomerangProjectile(x + 8, y, target);
+            projectile = activeBoomerang;
         } else {
-            projectile = new Projectile(x, y, target);
+            projectile = new Projectile(x + 8, y, target);
         }
         projectiles.add(projectile);
     }

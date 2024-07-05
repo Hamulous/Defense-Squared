@@ -6,12 +6,15 @@ import flixel.math.FlxPoint;
 
 class Projectile extends FlxSprite {
     private var target:Bloon;
+    private var tackPro:Bool = false;
     private var speed:Float = 200; // Speed of the projectile
+    private var damage:Int = 1; // Damage this projectile deals
 
-    public function new(X:Float, Y:Float, Target:Bloon) {
+    public function new(X:Float, Y:Float, Target:Bloon, ?isTack:Bool = false) {
         super(X, Y);
         makeGraphic(8, 8, FlxColor.YELLOW);
         target = Target;
+        tackPro = isTack;
     }
 
     override public function update(elapsed:Float):Void {
@@ -23,10 +26,10 @@ class Projectile extends FlxSprite {
             velocity.set(direction.x * speed, direction.y * speed);
 
             if (calculateDistance(target) < 8) {
-                target.kill();
+                target.takeDamage(damage);
                 kill();
             }
-        } else {
+        } else if (!tackPro) {
             kill();
         }
     }
