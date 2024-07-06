@@ -9,6 +9,7 @@ import flixel.ui.FlxButton;
 import flixel.math.FlxPoint;
 import flixel.util.FlxSpriteUtil;
 import objects.*;
+import utils.Wave;
 
 class PlayState extends FlxState {
     private var bloons:FlxTypedGroup<Bloon>;
@@ -16,6 +17,12 @@ class PlayState extends FlxState {
     private var projectiles:FlxTypedGroup<Projectile>;
     private var boomerangProjectiles:FlxTypedGroup<BoomerangProjectile>;
     private var waypoints:Array<FlxPoint>;
+
+    private var waves:Array<Wave>;
+    private var currentWaveIndex:Int = 0;
+    private var timeSinceLastWave:Float = 0;
+    private var timeSinceLastSpawn:Float = 0;
+    private var bloonsRemainingInWave:Int = 0;
 
     override public function create():Void {
         super.create();
@@ -33,6 +40,13 @@ class PlayState extends FlxState {
         // Draw waypoints and lines between them
         drawWaypointsAndLines();
 
+        // Define waves
+        waves = [
+            new Wave(5, 1, 1, waypoints),
+            new Wave(10, 1, 1, waypoints),
+            new Wave(20, 1, 1, waypoints)
+        ];
+
         // Initialize groups
         bloons = new FlxTypedGroup<Bloon>();
         towers = new FlxTypedGroup<Tower>();
@@ -43,30 +57,18 @@ class PlayState extends FlxState {
         add(towers);
         add(projectiles);
         add(boomerangProjectiles);
-
-        // Add some bloons for testing
-        for (i in 0...5) {
-            var bloon = new Bloon(waypoints, 0);
-            bloon.x -= (i * 100);
-            bloons.add(bloon);
-        }
-
-        // Add a tower
-        //var tower = new Tower(400, 300, projectiles, 0);
-        //towers.add(tower);
-
-        //var boomerangTower = new Tower(400, 700, boomerangProjectiles, 1);
-        //towers.add(boomerangTower);
     }
 
     override public function update(elapsed:Float):Void {
         super.update(elapsed);
 
         // Add a button to add towers
-        if (FlxG.mouse.justPressed)
-        {
+        if (FlxG.mouse.justPressedMiddle) {
             var tower = new Tower(FlxG.mouse.x, FlxG.mouse.y, projectiles, false);
             towers.add(tower);
+        } else if (FlxG.mouse.justPressed){
+            var spreadTower:SpreadTower = new SpreadTower(FlxG.mouse.x, FlxG.mouse.y, projectiles);
+            towers.add(spreadTower);
         } else if (FlxG.mouse.justPressedRight) {
             var boomerangTower = new Tower(FlxG.mouse.x, FlxG.mouse.y, boomerangProjectiles, true);
             towers.add(boomerangTower);
@@ -76,7 +78,48 @@ class PlayState extends FlxState {
         for (tower in towers) {
             tower.checkCollision(bloons, elapsed);
         }
+
+        for (projectile in projectiles) {
+            for (bloon in bloons) {
+                if (projectile.overlaps(bloon)) {
+                    bloon.takeDamage(1);
+                    projectile.kill();
+                }
+            }
+        }
+
+        handleWaves(elapsed);
     }
+
+    private function handleWaves(elapsed:Float):Void {
+        if (currentWaveIndex >= waves.length) {
+            return; // All waves completed
+        }
+
+        timeSinceLastWave += elapsed;
+
+        if (bloonsRemainingInWave <= 0) {
+            if (currentWaveIndex < waves.length) {
+                bloonsRemainingInWave = waves[currentWaveIndex].bloonCount;
+                timeSinceLastWave = 0;
+                timeSinceLastSpawn = 0;
+            }
+        } else {
+            timeSinceLastSpawn += elapsed;
+
+            if (timeSinceLastSpawn >= waves[currentWaveIndex].spawnInterval) {
+                var bloon:Bloon = waves[currentWaveIndex].spawnBloon();
+                bloons.add(bloon);
+                bloonsRemainingInWave--;
+                timeSinceLastSpawn = 0;
+            }
+
+            if (bloonsRemainingInWave <= 0) {
+                currentWaveIndex++;
+            }
+        }
+    }
+
 
     private function drawWaypointsAndLines():Void {
         for (i in 0...waypoints.length - 1) {
