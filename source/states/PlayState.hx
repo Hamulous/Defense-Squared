@@ -65,8 +65,8 @@ class PlayState extends FlxState {
         // Add a button to add towers
         if (FlxG.mouse.justPressed)
         {
-            var tower = new Tower(FlxG.mouse.x, FlxG.mouse.y, projectiles, false);
-            towers.add(tower);
+            var spreadTower = new SpreadTower(FlxG.mouse.x, FlxG.mouse.y, projectiles);
+            towers.add(spreadTower);
         } else if (FlxG.mouse.justPressedRight) {
             var boomerangTower = new Tower(FlxG.mouse.x, FlxG.mouse.y, boomerangProjectiles, true);
             towers.add(boomerangTower);
