@@ -54,6 +54,14 @@ class Tower extends FlxSprite {
                 } 
             }
         }
+
+        /*if (!recharging && timeSinceLastShot >= fireRate && (!isBoomerang || activeBoomerang == null)) {
+            var target:Bloon = findClosestBloon(bloons);
+            if (target != null && calculateDistance(new FlxPoint(x, y), target) < 100) {
+                shoot(target);
+                timeSinceLastShot = 0;
+            }
+        }*/
     }
 
     private function findClosestBloon(bloons:FlxTypedGroup<Bloon>):Bloon {
