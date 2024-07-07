@@ -7,6 +7,7 @@ import flixel.math.FlxPoint;
 class Projectile extends FlxSprite {
     private var target:Bloon;
     private var speed:Float = 200; // Speed of the projectile
+    private var damage:Int = 1; // Damage this projectile deals
 
     public function new(X:Float, Y:Float, Target:Bloon) {
         super(X, Y);
@@ -23,7 +24,7 @@ class Projectile extends FlxSprite {
             velocity.set(direction.x * speed, direction.y * speed);
 
             if (calculateDistance(target) < 8) {
-                target.kill();
+                target.takeDamage(damage);
                 kill();
             }
         } else {

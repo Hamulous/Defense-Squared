@@ -9,6 +9,7 @@ class Bloon extends FlxSprite {
     private var waypoints:Array<FlxPoint>;
     private var currentWaypointIndex:Int;
     private var speed:Float = 50;
+    public var bloonHealth:Int = 3;
 
     public function new(Waypoints:Array<FlxPoint>, StartIndex:Int) {
         var startPoint = Waypoints[StartIndex];
@@ -46,5 +47,12 @@ class Bloon extends FlxSprite {
         var dx:Float = point1.x - point2.x;
         var dy:Float = point1.y - point2.y;
         return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    public function takeDamage(damage:Int):Void {
+        bloonHealth -= damage;
+        if (bloonHealth <= 0) {
+            destroy();
+        }
     }
 }
