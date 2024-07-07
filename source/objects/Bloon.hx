@@ -1,5 +1,6 @@
 package objects;
 
+import states.PlayState;
 import flixel.FlxSprite;
 import flixel.FlxG;
 import flixel.math.FlxPoint;
@@ -30,7 +31,9 @@ class Bloon extends FlxSprite {
             if (currentWaypointIndex < waypoints.length) {
                 setVelocityTowardsWaypoint();
             } else {
-                // Bloon has reached the end of the path
+                PlayState.instance.lives--;
+                PlayState.instance.bloonsActive--; // Decrement active bloons count
+                PlayState.instance.money + 10;
                 kill();
             }
         }
@@ -53,6 +56,7 @@ class Bloon extends FlxSprite {
         bloonHealth -= damage;
         if (bloonHealth <= 0) {
             destroy();
+            PlayState.instance.bloonsActive--; // Decrement active bloons count
         }
     }
 }
