@@ -155,21 +155,30 @@ class PlayState extends FlxState {
         if (curSelected >= 3)
             curSelected = 0;
 
-        trace('Changed' + curSelected);
+        trace('Changed ' + curSelected);
     }
 
     private function placeTower(towerType:Int):Void {
         switch(towerType)
         {
             case 0:
-                var tower = new Tower(FlxG.mouse.x, FlxG.mouse.y, projectiles);
-                towers.add(tower);
+                if (money >= 50) {
+                    money -= 50;
+                    var tower = new Tower(FlxG.mouse.x, FlxG.mouse.y, projectiles);
+                    towers.add(tower);
+                }
             case 1:
-                var boomerangTower = new BoomerangTower(FlxG.mouse.x, FlxG.mouse.y, boomerangProjectiles);
-                towers.add(boomerangTower);
+                if (money >= 75) {
+                    money -= 75;
+                    var boomerangTower = new BoomerangTower(FlxG.mouse.x, FlxG.mouse.y, boomerangProjectiles);
+                    towers.add(boomerangTower);
+                }
             case 2:
-                var spreadTower = new SpreadTower(FlxG.mouse.x, FlxG.mouse.y, spreadProjectiles);
-                towers.add(spreadTower);
+                if (money >= 125) {
+                    money -= 125;
+                    var spreadTower = new SpreadTower(FlxG.mouse.x, FlxG.mouse.y, spreadProjectiles);
+                    towers.add(spreadTower);
+                }
         }
     }
 
