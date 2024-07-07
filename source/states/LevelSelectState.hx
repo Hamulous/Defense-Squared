@@ -7,20 +7,22 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.text.FlxText;
 import openfl.system.System;
 import utils.*;
+import states.PlayState;
 
-class MainMenuState extends FlxState
+class LevelSelectState extends FlxState
 {   
     var menuItems:FlxTypedGroup<FlxSprite>;
     var menuItem:FlxText;
     var optionShit:Array<String> = [
-		'Play',
-        'Settings',
-		'Credits',
-		'Quit'
+		'Level 1',
+        'Level 2',
+		'Level 3',
+		'Back'
 	];
 
     public static var curSelected:Int = 0;
     var cancheck:Bool = true;
+    public static var curLevel:Int = 0;
 
     var editable:Bool = false; // DEBUG THING
     var editbleSprite:FlxSprite;
@@ -149,21 +151,19 @@ class MainMenuState extends FlxState
             {
                 selectedSomethin = true;
                 cancheck = false;
+                curLevel = curSelected;
 
                 menuItems.forEach(function(spr:FlxSprite)
                 {
                     var daChoice:String = optionShit[curSelected];
                     switch (daChoice)
                     {
-                        case 'Play':
-                            FlxG.switchState(new states.LevelSelectState());
-                        case 'Settings':
-                            FlxG.switchState(new options.OptionsState());
-                        case 'Quit':
-                            System.exit(0);
+                        case 'Back':
+                            FlxG.switchState(new states.MainMenuState());
+                        default:
+                            FlxG.switchState(new states.PlayState());
                     }
                 });
-                
             }
         }
 

@@ -1,5 +1,6 @@
 package objects;
 
+import states.PlayState;
 import flixel.FlxSprite;
 import flixel.FlxG;
 import flixel.math.FlxPoint;
@@ -30,7 +31,9 @@ class Bloon extends FlxSprite {
             if (currentWaypointIndex < waypoints.length) {
                 setVelocityTowardsWaypoint();
             } else {
-                // Bloon has reached the end of the path
+                PlayState.instance.lives--;
+                PlayState.instance.bloonsActive--; // Decrement active bloons count
+                PlayState.instance.money + 10;
                 kill();
             }
         }
@@ -43,16 +46,17 @@ class Bloon extends FlxSprite {
         velocity.set(direction.x * speed, direction.y * speed);
     }
 
-    public function takeDamage(damage:Int):Void {
-        bloonHealth -= damage;
-        if (bloonHealth <= 0) {
-            kill();
-        }
-    }
-
     private function calculateDistance(point1:FlxPoint, point2:FlxPoint):Float {
         var dx:Float = point1.x - point2.x;
         var dy:Float = point1.y - point2.y;
         return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    public function takeDamage(damage:Int):Void {
+        bloonHealth -= damage;
+        if (bloonHealth <= 0) {
+            destroy();
+            PlayState.instance.bloonsActive--; // Decrement active bloons count
+        }
     }
 }

@@ -24,7 +24,7 @@ class Projectile extends FlxSprite {
             velocity.set(direction.x * speed, direction.y * speed);
 
             if (calculateDistance(target) < 8) {
-                //target.takeDamage(damage);
+                target.takeDamage(damage);
                 kill();
             }
         } else {

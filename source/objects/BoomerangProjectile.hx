@@ -8,7 +8,7 @@ class BoomerangProjectile extends FlxSprite {
     private var target:Bloon;
     private var pointOrigin:FlxPoint;
     private var controlPoint:FlxPoint;
-    private var speed:Float = 650; // Increased speed
+    private var speed:Float = 650;
     private var t:Float = 0;
     private var returning:Bool = false;
     public var returned:Bool = false;
