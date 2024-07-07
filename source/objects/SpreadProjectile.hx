@@ -7,7 +7,6 @@ import flixel.FlxG;
 
 class SpreadProjectile extends FlxSprite {
     private var targets:Array<Bloon>;
-    private var speed:Float = 200; // Speed of the projectile
     private var damage:Int = 1; // Damage this projectile deals
 
     public function new(X:Float, Y:Float, velocityX:Float, velocityY:Float, Targets:Array<Bloon>) {
@@ -21,7 +20,7 @@ class SpreadProjectile extends FlxSprite {
         super.update(elapsed);
         var closestTarget:Bloon = findClosestTarget();
         if (closestTarget != null) {
-            if (calculateDistance(closestTarget) < 8) {
+            if (calculateDistance(closestTarget) < 10) {
                 closestTarget.takeDamage(damage);
                 if (!closestTarget.alive) {
                     targets.remove(closestTarget);
@@ -53,7 +52,6 @@ class SpreadProjectile extends FlxSprite {
 
         return closest;
     }
-
 
     private function calculateDistance(bloon:Bloon):Float {
         var dx:Float = x - bloon.x;

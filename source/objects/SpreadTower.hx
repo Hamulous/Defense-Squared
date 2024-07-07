@@ -1,3 +1,4 @@
+//I'm gonna go ahead and say, I'm aware of how dogshit this thing is
 package objects;
 
 import flixel.FlxSprite;
@@ -53,8 +54,8 @@ class SpreadTower extends FlxSprite {
         for (i in 0...projectileCount) {
             var angle:Float = angleStep * i;
             var radians:Float = angle * Math.PI / 180;
-            var velocityX:Float = Math.cos(radians) * 100;
-            var velocityY:Float = Math.sin(radians) * 100;
+            var velocityX:Float = Math.cos(radians) * 80;
+            var velocityY:Float = Math.sin(radians) * 80;
 
             var projectile:SpreadProjectile = new SpreadProjectile(x, y, velocityX, velocityY, targets);
             projectiles.add(projectile);
