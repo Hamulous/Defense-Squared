@@ -18,6 +18,7 @@ class PlayState extends FlxState {
     private var projectiles:FlxTypedGroup<Projectile>;
     private var boomerangProjectiles:FlxTypedGroup<BoomerangProjectile>;
     private var spreadProjectiles:FlxTypedGroup<SpreadProjectile>;
+    private var moneyDrops:FlxTypedGroup<MoneyDrop>;
     private var waypoints:Array<FlxPoint>;
 
     private var waves:Array<Wave>;
@@ -108,6 +109,7 @@ class PlayState extends FlxState {
         projectiles = new FlxTypedGroup<Projectile>();
         boomerangProjectiles = new FlxTypedGroup<BoomerangProjectile>();
         spreadProjectiles = new FlxTypedGroup<SpreadProjectile>();
+        moneyDrops = new FlxTypedGroup<MoneyDrop>();
 
         livesText = new FlxText(10, 10, 200, "Lives: " + lives, 16);
         moneyText = new FlxText(10, 40, 200, "Money: " + money, 16);
@@ -117,9 +119,13 @@ class PlayState extends FlxState {
         add(projectiles);
         add(boomerangProjectiles);
         add(spreadProjectiles);
+        add(moneyDrops);
 
         add(livesText);
         add(moneyText);
+
+        var moneyTower = new MoneyTower(300, 500, moneyDrops);
+        towers.add(moneyTower);
 
         changeTowerSelect();
     }
@@ -136,7 +142,7 @@ class PlayState extends FlxState {
         moneyText.text = "Money: " + money;
 
         if (FlxG.mouse.justPressed) {
-            placeTower(curSelected);
+            //placeTower(curSelected);
         }
 
         // Check for collisions between towers and bloons
