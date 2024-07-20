@@ -7,7 +7,7 @@ import flixel.math.FlxPoint;
 import flixel.group.FlxGroup.FlxTypedGroup;
 
 class SpreadTower extends FlxSprite {
-    public var fireRate:Float = 1.5; // Time in seconds between shots
+    public var fireRate:Float = 5; // Time in seconds between shots
     private var timeSinceLastShot:Float = 0;
     private var projectiles:FlxTypedGroup<Dynamic>; // Accept both types of projectiles
     private var angleStep:Float = 360;

@@ -8,6 +8,8 @@ import flixel.FlxG;
 class SpreadProjectile extends FlxSprite {
     private var targets:Array<Bloon>;
     private var damage:Int = 1; // Damage this projectile deals
+    private var killInSeconds:Float = 2; // Time in seconds before the projectile is killed
+    private var timeAlive:Float = 0; // Tracks how long the projectile has been alive
 
     public function new(X:Float, Y:Float, velocityX:Float, velocityY:Float, Targets:Array<Bloon>) {
         super(X, Y);
@@ -18,6 +20,14 @@ class SpreadProjectile extends FlxSprite {
 
     override public function update(elapsed:Float):Void {
         super.update(elapsed);
+        timeAlive += elapsed; // Update the time the projectile has been alive
+
+        // Check if the projectile should be killed due to time
+        if (timeAlive >= killInSeconds) {
+            kill();
+            return;
+        }
+        
         var closestTarget:Bloon = findClosestTarget();
         if (closestTarget != null) {
             if (calculateDistance(closestTarget) < 10) {
