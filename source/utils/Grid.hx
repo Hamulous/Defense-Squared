@@ -11,37 +11,58 @@ enum TileType {
 
 class Grid {
     public var cellSize:Int;
-    public var width:Int;
-    public var height:Int;
-    private var cells:Array<Array<TileType>>;
+    public var cols:Int;
+    public var rows:Int;
+    private var tiles:Array<Array<TileType>>;
 
-    public function new(cellSize:Int, width:Int, height:Int) {
+   public function new(cellSize:Int, cols:Int, rows:Int) {
         this.cellSize = cellSize;
-        this.width = width;
-        this.height = height;
-        cells = new Array<Array<TileType>>();
+        this.cols = cols;
+        this.rows = rows;
+        tiles = new Array<Array<TileType>>();
 
-        for (i in 0...width) {
-            cells[i] = new Array<TileType>();
-            for (j in 0...height) {
-                cells[i][j] = TileType.EMPTY;
+        for (y in 0...rows) {
+            var row = new Array<TileType>();
+            for (x in 0...cols) {
+                row.push(TileType.EMPTY);
             }
+            tiles.push(row);
         }
     }
 
-    public function setTileType(x:Int, y:Int, type:TileType):Void {
-        cells[x][y] = type;
-    }
-
-    public function getTileType(x:Int, y:Int):TileType {
-        return cells[x][y];
-    }
-
-    public function worldToGrid(x:Float, y:Float):FlxPoint {
-        return new FlxPoint(Math.floor(x / cellSize), Math.floor(y / cellSize));
+    public function worldToGrid(worldX:Float, worldY:Float):FlxPoint {
+        var gridX = Math.floor(worldX / cellSize);
+        var gridY = Math.floor(worldY / cellSize);
+        return new FlxPoint(gridX, gridY);
     }
 
     public function gridToWorld(gridX:Int, gridY:Int):FlxPoint {
-        return new FlxPoint(gridX * cellSize, gridY * cellSize);
+        var worldX = gridX * cellSize;
+        var worldY = gridY * cellSize;
+        return new FlxPoint(worldX, worldY);
+    }
+
+    public function getTileType(gridX:Int, gridY:Int):TileType {
+        return tiles[gridY][gridX];
+    }
+
+    public function setTileType(gridX:Int, gridY:Int, type:TileType):Void {
+        tiles[gridY][gridX] = type;
+    }
+
+    public function getData():Array<Array<TileType>> {
+        return tiles;
+    }
+
+    public function setData(data:Array<Array<TileType>>):Void {
+        tiles = data;
+    }
+
+    public function clear():Void {
+        for (y in 0...rows) {
+            for (x in 0...cols) {
+                tiles[y][x] = TileType.EMPTY;
+            }
+        }
     }
 }
