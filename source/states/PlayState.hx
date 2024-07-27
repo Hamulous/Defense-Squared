@@ -11,6 +11,7 @@ import flixel.util.FlxSpriteUtil;
 import flixel.text.FlxText;
 import objects.*;
 import utils.Wave;
+import utils.Grid;
 
 class PlayState extends FlxState {
     private var bloons:FlxTypedGroup<Bloon>;
@@ -35,11 +36,15 @@ class PlayState extends FlxState {
 
     public static var instance:PlayState;
     private var curSelected:Int = 0;
+    private var grid:Grid;
 
     override public function create():Void {
         instance = this;
 
         super.create();
+
+        var cellSize:Int = 32;
+        grid = new Grid(cellSize, Std.int(FlxG.width / cellSize), Std.int(FlxG.height / cellSize));
 
         // Define waypoints
         switch (LevelSelectState.curLevel)
@@ -90,6 +95,26 @@ class PlayState extends FlxState {
                     new FlxPoint(700, 200),
                     new FlxPoint(800, 200)
                 ];
+        }
+
+        // Mark waypoints and paths as occupied in the grid
+        for (i in 0...waypoints.length - 1) {
+            var start:FlxPoint = waypoints[i];
+            var end:FlxPoint = waypoints[i + 1];
+            markPathAsOccupied(start, end);
+        }
+
+         // Define water tiles
+         var waterTiles = [
+            new FlxPoint(10, 10),
+            new FlxPoint(11, 10),
+            new FlxPoint(12, 10),
+            new FlxPoint(13, 10)
+        ];
+
+        // Mark water tiles in the grid
+        for (tile in waterTiles) {
+            grid.setTileType(Std.int(tile.x), Std.int(tile.y), TileType.WATER);
         }
        
         // Draw waypoints and lines between them
@@ -142,7 +167,7 @@ class PlayState extends FlxState {
         moneyText.text = "Money: " + money;
 
         if (FlxG.mouse.justPressed) {
-            //placeTower(curSelected);
+            placeTower(curSelected);
         }
 
         // Check for collisions between towers and bloons
@@ -157,8 +182,8 @@ class PlayState extends FlxState {
         curSelected += change;
 
         if (curSelected < 0)
-            curSelected = 2;
-        if (curSelected >= 3)
+            curSelected = 4;
+        if (curSelected >= 5)
             curSelected = 0;
 
         trace('Changed ' + curSelected);
@@ -168,23 +193,62 @@ class PlayState extends FlxState {
         switch(towerType)
         {
             case 0:
-                if (money >= 50) {
+                var gridPos:FlxPoint = grid.worldToGrid(FlxG.mouse.x, FlxG.mouse.y);
+                if (grid.getTileType(Std.int(gridPos.x), Std.int(gridPos.y)) == TileType.EMPTY && money >= 50) {
                     money -= 50;
                     var tower = new Tower(FlxG.mouse.x, FlxG.mouse.y, projectiles);
                     towers.add(tower);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
                 }
             case 1:
-                if (money >= 75) {
+                var gridPos:FlxPoint = grid.worldToGrid(FlxG.mouse.x, FlxG.mouse.y);
+                if (grid.getTileType(Std.int(gridPos.x), Std.int(gridPos.y)) == TileType.EMPTY && money >= 75) {
                     money -= 75;
                     var boomerangTower = new BoomerangTower(FlxG.mouse.x, FlxG.mouse.y, boomerangProjectiles);
                     towers.add(boomerangTower);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
                 }
             case 2:
-                if (money >= 125) {
+                var gridPos:FlxPoint = grid.worldToGrid(FlxG.mouse.x, FlxG.mouse.y);
+                if (grid.getTileType(Std.int(gridPos.x), Std.int(gridPos.y)) == TileType.EMPTY && money >= 125) {
                     money -= 125;
                     var spreadTower = new SpreadTower(FlxG.mouse.x, FlxG.mouse.y, spreadProjectiles);
                     towers.add(spreadTower);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
+                }     
+            case 3:
+                var gridPos:FlxPoint = grid.worldToGrid(FlxG.mouse.x, FlxG.mouse.y);
+                if (grid.getTileType(Std.int(gridPos.x), Std.int(gridPos.y)) == TileType.EMPTY && money >= 200) {
+                    money -= 200;
+                    var moneyTower = new MoneyTower(FlxG.mouse.x, FlxG.mouse.y, moneyDrops);
+                    towers.add(moneyTower);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
                 }
+            case 4:
+                var gridPos:FlxPoint = grid.worldToGrid(FlxG.mouse.x, FlxG.mouse.y);
+                if (grid.getTileType(Std.int(gridPos.x), Std.int(gridPos.y)) == TileType.WATER && money >= 75) {
+                    money -= 75;
+                    var waterTower = new WaterTower(FlxG.mouse.x, FlxG.mouse.y, projectiles);
+                    towers.add(waterTower);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
+                }
+        }
+    }
+
+    private function markPathAsOccupied(start:FlxPoint, end:FlxPoint):Void {
+        var startX:Int = Math.floor(start.x / grid.cellSize);
+        var startY:Int = Math.floor(start.y / grid.cellSize);
+        var endX:Int = Math.floor(end.x / grid.cellSize);
+        var endY:Int = Math.floor(end.y / grid.cellSize);
+
+        if (startX == endX) {
+            for (y in Std.int(Math.min(startY, endY))...Std.int(Math.max(startY, endY) + 1)) {
+                grid.setTileType(startX, y, TileType.PATH);
+            }
+        } else if (startY == endY) {
+            for (x in Std.int(Math.min(startX, endX))...Std.int(Math.max(startX, endX) + 1)) {
+                grid.setTileType(x, startY, TileType.PATH);
+            }
         }
     }
 
