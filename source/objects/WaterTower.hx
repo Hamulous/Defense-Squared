@@ -12,7 +12,7 @@ class WaterTower extends FlxSprite {
 
     public function new(X:Float, Y:Float, projectilesGroup:FlxTypedGroup<Dynamic>) {
         super(X, Y);
-        makeGraphic(32, 32, FlxColor.BLUE);
+        makeGraphic(32, 32, FlxColor.BROWN);
         projectiles = projectilesGroup;
     }
     

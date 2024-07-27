@@ -44,4 +44,11 @@ class Grid {
     public function gridToWorld(gridX:Int, gridY:Int):FlxPoint {
         return new FlxPoint(gridX * cellSize, gridY * cellSize);
     }
+
+    public function isTileAvailable(x:Int, y:Int):Bool {
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return false;
+        }
+        return cells[x][y] == TileType.EMPTY;
+    }
 }
