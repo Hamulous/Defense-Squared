@@ -5,8 +5,9 @@ import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxPoint;
 
+
 class MoneyTower extends FlxSprite {
-    public var productionRate:Float = 15; // Time in seconds to produce money
+    public var productionRate:Float = 5; // Time in seconds to produce money
     private var timeSinceLastProduction:Float = 0;
     private var moneyDrops:FlxTypedGroup<MoneyDrop>;
     private var dropPosistions:Array<Float> = [-30, 60, 30, -60];
