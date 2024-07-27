@@ -38,13 +38,14 @@ class PlayState extends FlxState {
     private var grid:Grid;
     private var dragging:Bool = false;
     private var dragTower:FlxSprite;
-    private var towerType:String; 
-    
+    private var towerType:String;
+
     private var normalTowerSprite:FlxSprite;
     private var boomerangTowerSprite:FlxSprite;
     private var spreadTowerSprite:FlxSprite;
     private var moneyTowerSprite:FlxSprite;
     private var waterTowerSprite:FlxSprite;
+
 
     override public function create():Void {
         instance = this;
@@ -105,8 +106,8 @@ class PlayState extends FlxState {
                 ];
         }
 
-         // Mark waypoints and paths as occupied in the grid
-         for (i in 0...waypoints.length - 1) {
+        // Mark waypoints and paths as occupied in the grid
+        for (i in 0...waypoints.length - 1) {
             var start:FlxPoint = waypoints[i];
             var end:FlxPoint = waypoints[i + 1];
             markPathAsOccupied(start, end);
@@ -120,6 +121,7 @@ class PlayState extends FlxState {
             new FlxPoint(13, 10)
         ];
 
+        // Mark water tiles in the grid
         for (tile in waterTiles) {
             grid.setTileType(Std.int(tile.x), Std.int(tile.y), TileType.WATER);
         }
@@ -157,7 +159,11 @@ class PlayState extends FlxState {
         add(livesText);
         add(moneyText);
 
+        // Create UI sprites for towers
         createTowerSprites();
+
+        //var moneyTower = new MoneyTower(300, 500, moneyDrops);
+        //towers.add(moneyTower);
     }
 
     override public function update(elapsed:Float):Void {
@@ -166,23 +172,57 @@ class PlayState extends FlxState {
         livesText.text = "Lives: " + lives;
         moneyText.text = "Money: " + money;
 
-        // Handle dragging and dropping towers
-        if (dragging) {
+         // Handle dragging and dropping towers
+         if (dragging) {
             dragTower.x = FlxG.mouse.x - dragTower.width / 2;
             dragTower.y = FlxG.mouse.y - dragTower.height / 2;
 
             if (FlxG.mouse.justReleased) {
                 var gridPos:FlxPoint = grid.worldToGrid(dragTower.x, dragTower.y);
-                var tileType = grid.getTileType(Std.int(gridPos.x), Std.int(gridPos.y));
 
-                if (canPlaceTower(gridPos, towerType)) {
-                    placeTower(gridPos);
+                if (towerType == "Normal" && grid.isTileAvailable(Std.int(gridPos.x), Std.int(gridPos.y)) && money >= 50) {
+                    money -= 50;
+                    var tower = new Tower(dragTower.x, dragTower.y, projectiles);
+                    towers.add(tower);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
+                    dragging = false;
+                    dragTower.kill();
+                } else if (towerType == "Boomerang" && grid.isTileAvailable(Std.int(gridPos.x), Std.int(gridPos.y)) && money >= 75) {
+                    money -= 75;
+                    var boomerangTower = new BoomerangTower(dragTower.x, dragTower.y, boomerangProjectiles);
+                    towers.add(boomerangTower);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
+                    dragging = false;
+                    dragTower.kill();
+                } else if (towerType == "Spread" && grid.isTileAvailable(Std.int(gridPos.x), Std.int(gridPos.y)) && money >= 125) {
+                    money -= 125;
+                    var spreadTower = new SpreadTower(dragTower.x, dragTower.y, spreadProjectiles);
+                    towers.add(spreadTower);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
+                    dragging = false;
+                    dragTower.kill();
+                } else if (towerType == "Money" && grid.isTileAvailable(Std.int(gridPos.x), Std.int(gridPos.y)) && money >= 125) {
+                    money -= 200;
+                    var moneyTower = new MoneyTower(dragTower.x, dragTower.y, moneyDrops);
+                    towers.add(moneyTower);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
+                    dragging = false;
+                    dragTower.kill();
+                } else if (towerType == "Water" && grid.getTileType(Std.int(gridPos.x), Std.int(gridPos.y)) == TileType.WATER && money >= 125) {
+                    money -= 75;
+                    var waterTower = new WaterTower(dragTower.x, dragTower.y, projectiles);
+                    towers.add(waterTower);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
+                    dragging = false;
+                    dragTower.kill();
+                } else {
+                    // Invalid placement, cancel dragging
+                    dragging = false;
+                    dragTower.kill();
                 }
             }
         } else {
-            if (FlxG.mouse.justPressed) {
-                checkTowerSelection();
-            }
+            checkTowerSelection();
         }
 
         // Check for collisions between towers and bloons
@@ -191,6 +231,52 @@ class PlayState extends FlxState {
         }
 
         handleWaves(elapsed);
+    }
+
+    private function placeTower(towerType:Int):Void {
+        switch(towerType)
+        {
+            case 0:
+                var gridPos:FlxPoint = grid.worldToGrid(FlxG.mouse.x, FlxG.mouse.y);
+                if (grid.getTileType(Std.int(gridPos.x), Std.int(gridPos.y)) == TileType.EMPTY && money >= 50) {
+                    money -= 50;
+                    var tower = new Tower(FlxG.mouse.x, FlxG.mouse.y, projectiles);
+                    towers.add(tower);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
+                }
+            case 1:
+                var gridPos:FlxPoint = grid.worldToGrid(FlxG.mouse.x, FlxG.mouse.y);
+                if (grid.getTileType(Std.int(gridPos.x), Std.int(gridPos.y)) == TileType.EMPTY && money >= 75) {
+                    money -= 75;
+                    var boomerangTower = new BoomerangTower(FlxG.mouse.x, FlxG.mouse.y, boomerangProjectiles);
+                    towers.add(boomerangTower);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
+                }
+            case 2:
+                var gridPos:FlxPoint = grid.worldToGrid(FlxG.mouse.x, FlxG.mouse.y);
+                if (grid.getTileType(Std.int(gridPos.x), Std.int(gridPos.y)) == TileType.EMPTY && money >= 125) {
+                    money -= 125;
+                    var spreadTower = new SpreadTower(FlxG.mouse.x, FlxG.mouse.y, spreadProjectiles);
+                    towers.add(spreadTower);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
+                }     
+            case 3:
+                var gridPos:FlxPoint = grid.worldToGrid(FlxG.mouse.x, FlxG.mouse.y);
+                if (grid.getTileType(Std.int(gridPos.x), Std.int(gridPos.y)) == TileType.EMPTY && money >= 200) {
+                    money -= 200;
+                    var moneyTower = new MoneyTower(FlxG.mouse.x, FlxG.mouse.y, moneyDrops);
+                    towers.add(moneyTower);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
+                }
+            case 4:
+                var gridPos:FlxPoint = grid.worldToGrid(FlxG.mouse.x, FlxG.mouse.y);
+                if (grid.getTileType(Std.int(gridPos.x), Std.int(gridPos.y)) == TileType.WATER && money >= 75) {
+                    money -= 75;
+                    var waterTower = new WaterTower(FlxG.mouse.x, FlxG.mouse.y, projectiles);
+                    towers.add(waterTower);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
+                }
+        }
     }
 
     private function markPathAsOccupied(start:FlxPoint, end:FlxPoint):Void {
@@ -224,7 +310,6 @@ class PlayState extends FlxState {
                 timeSinceLastWave = 0;
                 timeSinceLastSpawn = 0;
                 currentWaveIndex++;
-                money += 100;
                 trace('NEXT WAVE');
             }
         } else {
@@ -236,14 +321,6 @@ class PlayState extends FlxState {
                 timeSinceLastSpawn = 0;
                 bloonsRemainingInWave--;
             }
-        }
-    }
-
-    private function drawWaterTiles(waterTiles:Array<FlxPoint>):Void {
-        for (tile in waterTiles) {
-            var waterTile:FlxSprite = new FlxSprite(tile.x * grid.cellSize, tile.y * grid.cellSize);
-            waterTile.makeGraphic(grid.cellSize, grid.cellSize, 0xFF0ab6f0);
-            add(waterTile);
         }
     }
     
@@ -259,6 +336,14 @@ class PlayState extends FlxState {
             var waypoint:FlxSprite = new FlxSprite(point.x - 2, point.y - 2);
             waypoint.makeGraphic(4, 4, FlxColor.GREEN);
             add(waypoint);
+        }
+    }
+
+    private function drawWaterTiles(waterTiles:Array<FlxPoint>):Void {
+        for (tile in waterTiles) {
+            var waterTile:FlxSprite = new FlxSprite(tile.x * grid.cellSize, tile.y * grid.cellSize);
+            waterTile.makeGraphic(grid.cellSize, grid.cellSize, FlxColor.BLUE);
+            add(waterTile);
         }
     }
 
@@ -309,64 +394,5 @@ class PlayState extends FlxState {
         dragTower = new FlxSprite(FlxG.mouse.x, FlxG.mouse.y);
         dragTower.makeGraphic(32, 32, 0x55ffffff); // Semi-transparent white for dragging
         add(dragTower);
-    }
-
-    private function canPlaceTower(gridPos:FlxPoint, type:String):Bool {
-        var tileType = grid.getTileType(Std.int(gridPos.x), Std.int(gridPos.y));
-        switch (tileType) {
-            case TileType.OCCUPIED:
-                return false;
-            case TileType.PATH:
-                return false;
-            case TileType.WATER:
-                return type == "Water";
-            case TileType.EMPTY:
-                return true;
-        }
-        return false;
-    }
-
-    private function placeTower(gridPos:FlxPoint):Void {
-        var worldPos:FlxPoint = grid.gridToWorld(Std.int(gridPos.x), Std.int(gridPos.y));
-
-        switch (towerType) {
-            case "Normal":
-                if (money >= 50) {
-                    money -= 50;
-                    var tower = new Tower(worldPos.x, worldPos.y, projectiles);
-                    towers.add(tower);
-                }
-            case "Boomerang":
-                if (money >= 75) {
-                    money -= 75;
-                    var boomerangTower = new BoomerangTower(worldPos.x, worldPos.y, boomerangProjectiles);
-                    towers.add(boomerangTower);
-                }
-            case "Spread":
-                if (money >= 125) {
-                    money -= 125;
-                    var spreadTower = new SpreadTower(worldPos.x, worldPos.y, spreadProjectiles);
-                    towers.add(spreadTower);
-                }
-            case "Money":
-                if (money >= 200) {
-                    money -= 200;
-                    var moneyTower = new MoneyTower(worldPos.x, worldPos.y, moneyDrops);
-                    towers.add(moneyTower);
-                }
-            case "Water":
-                if (money >= 75) {
-                    money -= 75;
-                    var waterTower = new WaterTower(worldPos.x, worldPos.y, projectiles);
-                    towers.add(waterTower);
-                }
-        }
-
-        // Mark grid position as occupied
-        grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
-
-        // Stop dragging
-        dragging = false;
-        dragTower.kill();
     }
 }
