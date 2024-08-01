@@ -35,7 +35,7 @@ class MoneyTower extends FlxSprite {
     }
 
     private function produceMoney():Void {
-        var moneyDrop = new MoneyDrop(x + dropPosistions[FlxG.random.int(0, 3)], y + dropPosistions[FlxG.random.int(0, 3)]);
+        var moneyDrop = new MoneyDrop(x + FlxG.random.float(-60, 60), y + FlxG.random.float(-60, 60));
         moneyDrops.add(moneyDrop);
     }
 }
