@@ -5,7 +5,7 @@ import flixel.FlxState;
 import flixel.graphics.FlxGraphic;
 import lime.app.Application;
 import openfl.Lib;
-import utils.SaveData;
+import utils.SettingsManager;
 import Main;
 
 class Init extends FlxState
@@ -38,7 +38,7 @@ class Init extends FlxState
 
 		FlxG.mouse.visible = false;
 
-		SaveData.load();
+		SettingsManager.loadSettings();
 
 		FlxG.switchState(Type.createInstance(Main.initialState, []));
 	}

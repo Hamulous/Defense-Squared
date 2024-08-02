@@ -24,7 +24,7 @@ class SpreadTower extends FlxSprite {
         timeSinceLastShot += elapsed;
 
         if (timeSinceLastShot >= fireRate) {
-            var closestBloons:Array<Bloon> = findClosestBloons(bloons, 100);
+            var closestBloons:Array<Bloon> = findClosestBloons(bloons, 150);
             if (closestBloons.length > 0) {
                 shoot(closestBloons);
                 timeSinceLastShot = 0;

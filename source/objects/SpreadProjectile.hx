@@ -8,7 +8,7 @@ import flixel.FlxG;
 class SpreadProjectile extends FlxSprite {
     private var targets:Array<Bloon>;
     private var damage:Int = 1; // Damage this projectile deals
-    private var killInSeconds:Float = 2; // Time in seconds before the projectile is killed
+    private var killInSeconds:Float = 1; // Time in seconds before the projectile is killed
     private var timeAlive:Float = 0; // Tracks how long the projectile has been alive
 
     public function new(X:Float, Y:Float, velocityX:Float, velocityY:Float, Targets:Array<Bloon>) {

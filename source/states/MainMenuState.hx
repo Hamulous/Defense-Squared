@@ -14,7 +14,7 @@ class MainMenuState extends FlxState
     var menuItem:FlxText;
     var optionShit:Array<String> = [
 		'Play',
-        'Settings',
+        'Options',
 		'Credits',
 		'Quit'
 	];
@@ -157,7 +157,7 @@ class MainMenuState extends FlxState
                     {
                         case 'Play':
                             FlxG.switchState(new states.LevelSelectState());
-                        case 'Settings':
+                        case 'Options':
                             FlxG.switchState(new options.OptionsState());
                         case 'Quit':
                             System.exit(0);

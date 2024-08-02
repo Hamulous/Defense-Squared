@@ -19,6 +19,7 @@ class PlayState extends FlxState {
     private var projectiles:FlxTypedGroup<Projectile>;
     private var boomerangProjectiles:FlxTypedGroup<BoomerangProjectile>;
     private var spreadProjectiles:FlxTypedGroup<SpreadProjectile>;
+    private var sniperProjectiles:FlxTypedGroup<SniperProjectile>;
     private var moneyDrops:FlxTypedGroup<MoneyDrop>;
     private var waypoints:Array<FlxPoint>;
 
@@ -45,7 +46,7 @@ class PlayState extends FlxState {
     private var spreadTowerSprite:FlxSprite;
     private var moneyTowerSprite:FlxSprite;
     private var waterTowerSprite:FlxSprite;
-
+    private var sniperTowerSprite:FlxSprite;
 
     override public function create():Void {
         instance = this;
@@ -144,6 +145,7 @@ class PlayState extends FlxState {
         projectiles = new FlxTypedGroup<Projectile>();
         boomerangProjectiles = new FlxTypedGroup<BoomerangProjectile>();
         spreadProjectiles = new FlxTypedGroup<SpreadProjectile>();
+        sniperProjectiles = new FlxTypedGroup<SniperProjectile>();
         moneyDrops = new FlxTypedGroup<MoneyDrop>();
 
         livesText = new FlxText(10, 10, 200, "Lives: " + lives, 16);
@@ -154,6 +156,7 @@ class PlayState extends FlxState {
         add(projectiles);
         add(boomerangProjectiles);
         add(spreadProjectiles);
+        add(sniperProjectiles);
         add(moneyDrops);
 
         add(livesText);
@@ -161,9 +164,6 @@ class PlayState extends FlxState {
 
         // Create UI sprites for towers
         createTowerSprites();
-
-        //var moneyTower = new MoneyTower(300, 500, moneyDrops);
-        //towers.add(moneyTower);
     }
 
     override public function update(elapsed:Float):Void {
@@ -212,6 +212,13 @@ class PlayState extends FlxState {
                     money -= 75;
                     var waterTower = new WaterTower(dragTower.x, dragTower.y, projectiles);
                     towers.add(waterTower);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
+                    dragging = false;
+                    dragTower.kill();
+                } else if (towerType == "Sniper" && grid.isTileAvailable(Std.int(gridPos.x), Std.int(gridPos.y)) && money >= 300) {
+                    money -= 300;
+                    var sniperTower = new SniperTower(dragTower.x, dragTower.y, sniperProjectiles);
+                    towers.add(sniperTower);
                     grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
                     dragging = false;
                     dragTower.kill();
@@ -296,7 +303,7 @@ class PlayState extends FlxState {
     private function drawWaterTiles(waterTiles:Array<FlxPoint>):Void {
         for (tile in waterTiles) {
             var waterTile:FlxSprite = new FlxSprite(tile.x * grid.cellSize, tile.y * grid.cellSize);
-            waterTile.makeGraphic(grid.cellSize, grid.cellSize, FlxColor.BLUE);
+            waterTile.makeGraphic(grid.cellSize, grid.cellSize, 0x00D9FF);
             add(waterTile);
         }
     }
@@ -326,6 +333,11 @@ class PlayState extends FlxState {
         waterTowerSprite.scrollFactor.set();
         waterTowerSprite.makeGraphic(48, 48, FlxColor.BROWN);
         add(waterTowerSprite);
+
+        sniperTowerSprite = new FlxSprite(310, FlxG.height - 50);
+        sniperTowerSprite.scrollFactor.set();
+        sniperTowerSprite.makeGraphic(48, 48, 0xFF78866b);
+        add(sniperTowerSprite);
     }
 
     private function checkTowerSelection():Void {
@@ -339,6 +351,8 @@ class PlayState extends FlxState {
             startDraggingTower("Money");
         } else if (waterTowerSprite.overlapsPoint(FlxG.mouse.getWorldPosition()) && FlxG.mouse.justPressed) {
             startDraggingTower("Water");
+        } else if (sniperTowerSprite.overlapsPoint(FlxG.mouse.getWorldPosition()) && FlxG.mouse.justPressed) {
+            startDraggingTower("Sniper");
         }
     }
 

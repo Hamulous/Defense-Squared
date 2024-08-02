@@ -1,199 +1,107 @@
 package options;
 
-import flixel.FlxG;
-import flixel.FlxSprite;
+import utils.SettingsManager;
+import utils.Paths;
 import flixel.FlxState;
-import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.text.FlxText;
-import openfl.system.System;
-import utils.*;
+import flixel.FlxG;
+import flixel.util.FlxSave;
+import flixel.util.FlxColor;
 
-class OptionsState extends FlxState
-{   
-    var menuItems:FlxTypedGroup<FlxSprite>;
-    var menuItem:FlxText;
-    var optionShit:Array<String> = [
-		'Video',
-		'Controls',
-		'Misc',
-		'Back'
-	];
+class OptionsState extends FlxState {
+    private var options:Array<FlxText>;
+    private var selectedOption:Int = 0;
 
-    public static var curSelected:Int = 0;
-    var cancheck:Bool = true;
-
-    var editable:Bool = false; // DEBUG THING
-    var editbleSprite:FlxSprite;
-    var lpo:Int = 700;
-    
-    override public function create():Void
-    {
-        FlxG.mouse.visible = true;
-        FlxG.autoPause = false;
-        
-        menuItems = new FlxTypedGroup<FlxSprite>();
-		add(menuItems);
-
-        var scale:Float = 1;
-        
-        for (i in 0...optionShit.length)
-        {
-            var offset:Float = 357 - (Math.max(optionShit.length, 4) - 4) * 80;
-            menuItem = new FlxText(274, (i * 40) + offset, optionShit[i], 12);
-            menuItem.scale.x = scale;
-            menuItem.scale.y = scale;
-            menuItem.ID = i;
-            menuItem.setFormat(Paths.font("vcr.ttf"), 32);
-            menuItems.add(menuItem);
-            var scr:Float = (optionShit.length - 4) * 0.135;
-            if(optionShit.length < 6) scr = 0;
-            menuItem.scrollFactor.set(0, scr);
-            //menuItem.antialiasing = ClientPrefs.globalAntialiasing; Save this for settings menu
-            //menuItem.setGraphicSize(Std.int(menuItem.width * 0.58));
-            menuItem.updateHitbox();
-
-            
-		    editbleSprite = menuItem;
-		    editable = true;
-        }
-            
+    override public function create():Void {
         super.create();
+
+        var title = new FlxText(0, 10, FlxG.width, "Options Menu");
+        title.setFormat(null, 24, FlxColor.WHITE, "center");
+        add(title);
+
+        options = [
+            new FlxText(50, 70, 0, "Volume: " + SettingsManager.volumeLevel),
+            new FlxText(50, 120, 0, "Sound Test"),
+            new FlxText(50, 170, 0, "Resolution: " + SettingsManager.resolutions[SettingsManager.currentResolutionIndex].width + "x" + SettingsManager.resolutions[SettingsManager.currentResolutionIndex].height),
+            new FlxText(50, 220, 0, "Toggle Fullscreen"),
+            new FlxText(50, 270, 0, "Back")
+        ];
+
+        for (option in options) {
+            option.setFormat(null, 16, FlxColor.WHITE);
+            add(option);
+        }
+        highlightOption(selectedOption);
     }
 
-    var selectedSomethin:Bool = false;
+    override public function update(elapsed:Float):Void {
+        super.update(elapsed);
 
-    override public function update(elapsed:Float):Void
-    {
-        
-		if (FlxG.mouse.visible != true)
-        {
-            FlxG.mouse.visible = true;
+        if (FlxG.keys.justPressed.UP) {
+            selectedOption = (selectedOption - 1 + options.length) % options.length;
+            highlightOption(selectedOption);
         }
-
-        if (cancheck != false)
-        {
-            for (i in menuItems)
-            {
-                if (FlxG.mouse.overlaps(i))
-                    {
-                        changeItemMOUSE(i.ID);
-                        i.alpha = 0.7;
-                    }
-                else
-                    {
-                        i.alpha = 1;
-                }
+        if (FlxG.keys.justPressed.DOWN) {
+            selectedOption = (selectedOption + 1) % options.length;
+            highlightOption(selectedOption);
+        }
+        if (FlxG.keys.justPressed.ENTER || FlxG.keys.justPressed.SPACE) {
+            handleOptionSelection(selectedOption);
+        }
+        if (FlxG.keys.justPressed.LEFT || FlxG.keys.justPressed.RIGHT) {
+            if (selectedOption == 0) {
+                adjustVolume(FlxG.keys.justPressed.RIGHT);
+            } else if (selectedOption == 2) {
+                adjustResolution(FlxG.keys.justPressed.RIGHT);
             }
         }
-        
-        if (FlxG.keys.pressed.SHIFT && editable)
-            {
-                editbleSprite.x = FlxG.mouse.screenX;
-                editbleSprite.y = FlxG.mouse.screenY;
-            }
-        else if (FlxG.keys.justPressed.C && editable)
-            {
-                trace(editbleSprite);
-                trace(lpo);
-            }
-        else if (FlxG.keys.justPressed.E && editable)
-                {
-                    if (FlxG.keys.pressed.ALT)
-                        lpo += 100;
-                    else
-                        lpo += 15;
-                    editbleSprite.setGraphicSize(Std.int(lpo));
-                    editbleSprite.updateHitbox();
-                }
-        else if (FlxG.keys.justPressed.Q && editable)
-                {
-                    if (FlxG.keys.pressed.ALT)
-                        lpo -= 100;
-                    else
-                        lpo -= 15;
-                    editbleSprite.setGraphicSize(Std.int(lpo));
-                    editbleSprite.updateHitbox();
-                }
-        else if (FlxG.keys.justPressed.L && editable)
-                {
-                    if (FlxG.keys.pressed.ALT)
-                        editbleSprite.x += 50;
-                    else
-                        editbleSprite.x += 1;
-                }
-        else if (FlxG.keys.justPressed.K && editable)
-                {
-                    if (FlxG.keys.pressed.ALT)
-                        editbleSprite.y += 50;
-                    else
-                        editbleSprite.y += 1;
-                }
-        else if (FlxG.keys.justPressed.J && editable)
-                {
-                    if (FlxG.keys.pressed.ALT)
-                        editbleSprite.x -= 50;
-                    else
-                        editbleSprite.x -= 1;
-                }
-        else if (FlxG.keys.justPressed.I && editable)
-                {
-                    if (FlxG.keys.pressed.ALT)
-                        editbleSprite.y -= 50;
-                    else
-                        editbleSprite.y -= 1;
-                }
-
-        if (!selectedSomethin)
-        {
-            if (FlxG.mouse.pressed && FlxG.mouse.overlaps(menuItems))
-            {
-                selectedSomethin = true;
-                cancheck = false;
-
-                menuItems.forEach(function(spr:FlxSprite)
-                {
-                    var daChoice:String = optionShit[curSelected];
-                    switch (daChoice)
-                    {
-                        case 'Back':
-                            FlxG.switchState(new states.MainMenuState());
-                    }
-                });
-                
-            }
-        }
-
-		super.update(elapsed);
-        
-        menuItems.forEach(function(spr:FlxSprite)
-        {
-            spr.screenCenter(X);
-        });
     }
 
-    function changeItemMOUSE(huh:Int = 0)
-    {
-        curSelected = huh;
+    private function highlightOption(index:Int):Void {
+        for (i in 0...options.length) {
+            options[i].color = (i == index) ? FlxColor.YELLOW : FlxColor.WHITE;
+        }
+    }
 
-        if (curSelected >= menuItems.length)
-            curSelected = 0;
-        if (curSelected < 0)
-            curSelected = menuItems.length - 1;
+    private function handleOptionSelection(index:Int):Void {
+        switch (index) {
+            case 0:
+                // Volume is adjusted using LEFT and RIGHT keys
+                return;
+            case 1:
+                FlxG.sound.play(Paths.sound('pingas'));
+                return;
+            case 2:
+                // Resolution is adjusted using LEFT and RIGHT keys
+                return;
+            case 3:
+                FlxG.fullscreen = !FlxG.fullscreen;
+                return;
+            case 4:
+                FlxG.switchState(new states.MainMenuState());
+                return;
+        }
+    }
 
-        menuItems.forEach(function(spr:FlxSprite)
-        {
-            spr.alpha = 1; //Place Holder
-            spr.updateHitbox();
+    private function adjustVolume(increase:Bool):Void {
+        if (increase && SettingsManager.volumeLevel < 10) {
+            SettingsManager.volumeLevel++;
+        } else if (!increase && SettingsManager.volumeLevel > 0) {
+            SettingsManager.volumeLevel--;
+        }
+        FlxG.sound.volume = SettingsManager.volumeLevel / 10;
+        options[0].text = "Volume: " + SettingsManager.volumeLevel;
+        SettingsManager.saveSettings();
+    }
 
-            if (spr.ID == curSelected)
-            {
-                spr.alpha = 0.7;
-                var add:Float = 0;
-                if(menuItems.length > 4) {
-                    add = menuItems.length * 8;
-                }
-                spr.centerOffsets();
-            }
-        });
+    private function adjustResolution(increase:Bool):Void {
+        if (increase && SettingsManager.currentResolutionIndex < SettingsManager.resolutions.length - 1) {
+            SettingsManager.currentResolutionIndex++;
+        } else if (!increase && SettingsManager.currentResolutionIndex > 0) {
+            SettingsManager.currentResolutionIndex--;
+        }
+        SettingsManager.setResolution(SettingsManager.currentResolutionIndex);
+        options[2].text = "Resolution: " + SettingsManager.resolutions[SettingsManager.currentResolutionIndex].width + "x" + SettingsManager.resolutions[SettingsManager.currentResolutionIndex].height;
+        SettingsManager.saveSettings();
     }
 }

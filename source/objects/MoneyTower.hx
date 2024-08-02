@@ -10,7 +10,6 @@ class MoneyTower extends FlxSprite {
     public var productionRate:Float = 5; // Time in seconds to produce money
     private var timeSinceLastProduction:Float = 0;
     private var moneyDrops:FlxTypedGroup<MoneyDrop>;
-    private var dropPosistions:Array<Float> = [-30, 60, 30, -60];
 
     public function new(x:Float, y:Float, moneyDrops:FlxTypedGroup<MoneyDrop>) {
         super(x, y);
