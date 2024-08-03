@@ -1,0 +1,29 @@
+{
+    "waypoints": [
+      {"x": 50, "y": 100},
+      {"x": 150, "y": 100},
+      {"x": 150, "y": 200},
+      {"x": 250, "y": 200},
+      {"x": 250, "y": 300}
+    ],
+    "waterTiles": [
+      {"x": 4, "y": 5},
+      {"x": 5, "y": 5},
+      {"x": 6, "y": 5}
+    ],
+    "waves": [
+      {
+        "bloonCount": 10,
+        "spawnInterval": 1.0
+      },
+      {
+        "bloonCount": 15,
+        "spawnInterval": 0.8
+      },
+      {
+        "bloonCount": 20,
+        "spawnInterval": 0.6
+      }
+    ]
+  }
+  

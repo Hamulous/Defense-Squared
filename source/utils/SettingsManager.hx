@@ -1,5 +1,6 @@
 package utils;
 
+import flixel.system.scaleModes.RatioScaleMode;
 import flixel.FlxG;
 import flixel.util.FlxSave;
 
@@ -37,6 +38,7 @@ class SettingsManager {
 
     public static function setResolution(index:Int):Void {
         var resolution = resolutions[index];
+        FlxG.scaleMode = new RatioScaleMode(false);
         FlxG.resizeGame(resolution.width, resolution.height);
         FlxG.resizeWindow(resolution.width, resolution.height);
     }

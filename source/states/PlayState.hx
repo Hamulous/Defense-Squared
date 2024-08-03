@@ -12,6 +12,8 @@ import flixel.text.FlxText;
 import objects.*;
 import utils.Wave;
 import utils.Grid;
+import haxe.Json;
+import openfl.utils.Assets;
 
 class PlayState extends FlxState {
     private var bloons:FlxTypedGroup<Bloon>;
@@ -60,84 +62,12 @@ class PlayState extends FlxState {
         switch (LevelSelectState.curLevel)
         {
             case 0:
-                waypoints = [
-                    new FlxPoint(0, 300), new FlxPoint(100, 300), new FlxPoint(100, 200),
-                    new FlxPoint(200, 200), new FlxPoint(200, 400), new FlxPoint(300, 400),
-                    new FlxPoint(300, 100), new FlxPoint(400, 100), new FlxPoint(400, 300),
-                    new FlxPoint(500, 300), new FlxPoint(500, 500), new FlxPoint(600, 500),
-                    new FlxPoint(600, 200), new FlxPoint(700, 200), new FlxPoint(700, 400),
-                    new FlxPoint(800, 400), new FlxPoint(800, 300), new FlxPoint(950, 300)
-                ];
+                loadLevel("assets/data/level1.json");
             case 1:
-                waypoints = [
-                    new FlxPoint(0, 300),
-                    new FlxPoint(100, 300),
-                    new FlxPoint(100, 200),
-                    new FlxPoint(200, 200),
-                    new FlxPoint(200, 400),
-                    new FlxPoint(300, 400),
-                    new FlxPoint(300, 100),
-                    new FlxPoint(400, 100),
-                    new FlxPoint(400, 300),
-                    new FlxPoint(500, 300),
-                    new FlxPoint(500, 200),
-                    new FlxPoint(600, 200),
-                    new FlxPoint(600, 400),
-                    new FlxPoint(700, 400),
-                    new FlxPoint(700, 300)
-                ];
+                loadLevel("assets/data/level2.json");
             case 2:
-                waypoints = [
-                    new FlxPoint(0, 300),
-                    new FlxPoint(100, 300),
-                    new FlxPoint(100, 200),
-                    new FlxPoint(200, 200),
-                    new FlxPoint(200, 400),
-                    new FlxPoint(300, 400),
-                    new FlxPoint(300, 100),
-                    new FlxPoint(400, 100),
-                    new FlxPoint(400, 300),
-                    new FlxPoint(500, 300),
-                    new FlxPoint(500, 100),
-                    new FlxPoint(600, 100),
-                    new FlxPoint(600, 400),
-                    new FlxPoint(700, 400),
-                    new FlxPoint(700, 200),
-                    new FlxPoint(800, 200)
-                ];
+                loadLevel("assets/data/level3.json");
         }
-
-        // Mark waypoints and paths as occupied in the grid
-        for (i in 0...waypoints.length - 1) {
-            var start:FlxPoint = waypoints[i];
-            var end:FlxPoint = waypoints[i + 1];
-            markPathAsOccupied(start, end);
-        }
-
-         // Define water tiles
-         var waterTiles = [
-            new FlxPoint(10, 10),
-            new FlxPoint(11, 10),
-            new FlxPoint(12, 10),
-            new FlxPoint(13, 10)
-        ];
-
-        // Mark water tiles in the grid
-        for (tile in waterTiles) {
-            grid.setTileType(Std.int(tile.x), Std.int(tile.y), TileType.WATER);
-        }
-       
-        // Draw waypoints and lines between them
-        drawWaypointsAndLines();
-        drawWaterTiles(waterTiles);
-
-        // Define waves
-        waves = [
-            new Wave(5, 1, 1, waypoints),
-            new Wave(10, 1, 1, waypoints),
-            new Wave(20, 1, 1, waypoints),
-            new Wave(20, 1, 1, waypoints) //Dummy wave I guess 
-        ];
          
         // Initialize groups
         bloons = new FlxTypedGroup<Bloon>();
@@ -166,6 +96,37 @@ class PlayState extends FlxState {
         createTowerSprites();
     }
 
+    private function loadLevel(jsonPath:String):Void {
+        var json:String = Assets.getText(jsonPath);
+        var levelData:Dynamic = Json.parse(json);
+    
+        // Load waypoints
+        waypoints = [];
+        var waypointsArray:Array<Dynamic> = cast levelData.waypoints;
+        for (point in waypointsArray) {
+            waypoints.push(new FlxPoint(point.x, point.y));
+        }
+    
+        // Load water tiles
+        var waterTilesArray:Array<Dynamic> = cast levelData.waterTiles;
+        var waterTiles: Array<FlxPoint> = [];
+        for (tile in waterTilesArray) {
+            waterTiles.push(new FlxPoint(tile.x, tile.y));
+            grid.setTileType(tile.x, tile.y, TileType.WATER);
+        }
+    
+        // Load waves
+        waves = [];
+        var wavesArray:Array<Dynamic> = cast levelData.waves;
+        for (waveData in wavesArray) {
+            waves.push(new Wave(waveData.bloonCount, waveData.spawnInterval, 1, waypoints));
+        }
+    
+        // Draw waypoints and lines between them
+        drawWaypointsAndLines();
+        drawWaterTiles(waterTiles);
+    }
+    
     override public function update(elapsed:Float):Void {
         super.update(elapsed);
 
