@@ -23,6 +23,7 @@ class PlayState extends FlxState {
     private var spreadProjectiles:FlxTypedGroup<SpreadProjectile>;
     private var sniperProjectiles:FlxTypedGroup<SniperProjectile>;
     private var moneyDrops:FlxTypedGroup<MoneyDrop>;
+    private var bees:FlxTypedGroup<Bee>;
     private var waypoints:Array<FlxPoint>;
 
     private var waves:Array<Wave>;
@@ -49,6 +50,7 @@ class PlayState extends FlxState {
     private var moneyTowerSprite:FlxSprite;
     private var waterTowerSprite:FlxSprite;
     private var sniperTowerSprite:FlxSprite;
+    private var beeKeeperTowerSprite:FlxSprite;
 
     override public function create():Void {
         instance = this;
@@ -77,6 +79,7 @@ class PlayState extends FlxState {
         spreadProjectiles = new FlxTypedGroup<SpreadProjectile>();
         sniperProjectiles = new FlxTypedGroup<SniperProjectile>();
         moneyDrops = new FlxTypedGroup<MoneyDrop>();
+        bees = new FlxTypedGroup<Bee>();
 
         livesText = new FlxText(10, 10, 200, "Lives: " + lives, 16);
         moneyText = new FlxText(10, 40, 200, "Money: " + money, 16);
@@ -88,6 +91,7 @@ class PlayState extends FlxState {
         add(spreadProjectiles);
         add(sniperProjectiles);
         add(moneyDrops);
+        add(bees);
 
         add(livesText);
         add(moneyText);
@@ -180,6 +184,13 @@ class PlayState extends FlxState {
                     money -= 300;
                     var sniperTower = new SniperTower(dragTower.x, dragTower.y, sniperProjectiles);
                     towers.add(sniperTower);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
+                    dragging = false;
+                    dragTower.kill();
+                } else if (towerType == "BeeKeeper" && grid.isTileAvailable(Std.int(gridPos.x), Std.int(gridPos.y)) && money >= 250) {
+                    money -= 250;
+                    var beekeeperTower = new BeekeeperTower(FlxG.mouse.x, FlxG.mouse.y, bees);
+                    towers.add(beekeeperTower);
                     grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
                     dragging = false;
                     dragTower.kill();
@@ -299,6 +310,11 @@ class PlayState extends FlxState {
         sniperTowerSprite.scrollFactor.set();
         sniperTowerSprite.makeGraphic(48, 48, 0xFF78866b);
         add(sniperTowerSprite);
+
+        beeKeeperTowerSprite = new FlxSprite(380, FlxG.height - 50);
+        beeKeeperTowerSprite.scrollFactor.set();
+        beeKeeperTowerSprite.makeGraphic(48, 48, 0xFFB22222);
+        add(beeKeeperTowerSprite);
     }
 
     private function checkTowerSelection():Void {
@@ -314,6 +330,8 @@ class PlayState extends FlxState {
             startDraggingTower("Water");
         } else if (sniperTowerSprite.overlapsPoint(FlxG.mouse.getWorldPosition()) && FlxG.mouse.justPressed) {
             startDraggingTower("Sniper");
+        } else if (beeKeeperTowerSprite.overlapsPoint(FlxG.mouse.getWorldPosition()) && FlxG.mouse.justPressed) {
+            startDraggingTower("BeeKeeper");
         }
     }
 

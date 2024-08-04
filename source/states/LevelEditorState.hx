@@ -140,7 +140,7 @@ class LevelEditorState extends FlxState {
 
     private function addWaterTile(pos:FlxPoint):Void {
         var waterTile:FlxSprite = new FlxSprite(pos.x, pos.y);
-        waterTile.makeGraphic(32, 32, FlxColor.BLUE);
+        waterTile.makeGraphic(32, 32, 0x00D9FF);
         grid.add(waterTile);
         waterTiles.push(new FlxPoint(pos.x, pos.y));
     }
