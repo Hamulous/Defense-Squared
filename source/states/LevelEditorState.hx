@@ -12,6 +12,12 @@ import flixel.addons.ui.FlxUIInputText;
 import flixel.addons.ui.FlxUIGroup;
 import haxe.Json;
 
+import openfl.net.FileReference;
+import openfl.events.Event;
+import openfl.events.IOErrorEvent;
+import openfl.utils.Assets;
+import lime.system.Clipboard;
+
 class LevelEditorState extends FlxState {
     private var grid:FlxTypedGroup<FlxSprite>;
     private var waypoints:Array<FlxPoint>;
@@ -32,6 +38,8 @@ class LevelEditorState extends FlxState {
     private var waveInputs:Array<FlxUIInputText>;
 
     private var menuGroup:FlxUIGroup;
+
+    private var file:FileReference;
 
     override public function create():Void {
         super.create();
@@ -60,7 +68,7 @@ class LevelEditorState extends FlxState {
         saveButton = new FlxButton(10, 140, "Save Level", saveLevel);
         loadButton = new FlxButton(10, 170, "Load Level", loadLevel);
 
-        jsonText = new FlxUIInputText(10, 200, 150, "Enter JSON path", 40);
+        jsonText = new FlxUIInputText(10, 200, 150, "assets/data/level1.json", 40);
 
         waveGroup = new FlxUIGroup();
         waveInputs = [];
@@ -147,7 +155,36 @@ class LevelEditorState extends FlxState {
         waveGroup.add(spawnIntervalInput);
     }
 
+    // save
+	private function onSaveComplete(event:Event):Void {
+        if (file == null) return;
+        file.removeEventListener(Event.COMPLETE, onSaveComplete);
+        file.removeEventListener(Event.CANCEL, onSaveCancel);
+        file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
+        file = null;
+        FlxG.log.notice("Successfully saved file.");
+    }
+
+    private function onSaveCancel(event:Event):Void {
+        if (file == null) return;
+        file.removeEventListener(Event.COMPLETE, onSaveComplete);
+        file.removeEventListener(Event.CANCEL, onSaveCancel);
+        file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
+        file = null;
+    }
+
+    private function onSaveError(event:IOErrorEvent):Void {
+        if (file == null) return;
+        file.removeEventListener(Event.COMPLETE, onSaveComplete);
+        file.removeEventListener(Event.CANCEL, onSaveCancel);
+        file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
+        file = null;
+        FlxG.log.error("Problem saving file");
+    }
+
     private function saveLevel():Void {
+        if (file != null) return;
+
         var waveData:Array<WaveData> = [];
         for (i in 0...Std.int(waveInputs.length / 2)) {
             var bloonCount:Int = Std.parseInt(waveInputs[i * 2].text);
@@ -161,24 +198,13 @@ class LevelEditorState extends FlxState {
             waves: waveData
         };
 
-        var json:String = Json.stringify(levelData);
+        var json:String = Json.stringify(levelData, "\t");
 
-        // Determine the path to the user's desktop
-        var desktopPath:String;
-        #if (windows)
-            desktopPath = sys.io.Path.desktopDirectory + "level_data.json";
-        #elseif (mac || linux)
-            desktopPath = sys.io.Path.userHome + "/Desktop/level_data.json";
-        #else
-            desktopPath = sys.io.Path.userHome + "/Desktop/level_data.json";
-        #end
-
-        try {
-            File.saveContent(desktopPath, json);
-            FlxG.log("Level saved to desktop: " + desktopPath);
-        } catch (e:Dynamic) {
-            FlxG.log("Error saving level: " + e);
-        }
+        file = new FileReference();
+        file.addEventListener(Event.COMPLETE, onSaveComplete);
+        file.addEventListener(Event.CANCEL, onSaveCancel);
+        file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
+        file.save(json, "levelData.json");
     }
 
     private function loadLevel():Void {
