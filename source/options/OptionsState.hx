@@ -7,10 +7,14 @@ import flixel.text.FlxText;
 import flixel.FlxG;
 import flixel.util.FlxSave;
 import flixel.util.FlxColor;
+import flixel.sound.FlxSound;
+import flixel.sound.filters.*;
+import flixel.sound.filters.effects.*;
 
 class OptionsState extends FlxState {
     private var options:Array<FlxText>;
     private var selectedOption:Int = 0;
+    var pingas:FlxFilteredSound;
 
     override public function create():Void {
         super.create();
@@ -32,6 +36,16 @@ class OptionsState extends FlxState {
             add(option);
         }
         highlightOption(selectedOption);
+
+        pingas = new FlxFilteredSound();
+        pingas.loadEmbedded(Paths.sound('pingas'));
+        FlxG.sound.list.add(pingas);
+        FlxG.sound.defaultSoundGroup.add(pingas);
+
+        pingas.filter = new FlxSoundFilter();
+        pingas.filter.filterType = FlxSoundFilterType.BANDPASS;
+        pingas.filter.gainHF = 0.2;
+        pingas.filter.gainLF = 0.5;
     }
 
     override public function update(elapsed:Float):Void {
@@ -69,7 +83,7 @@ class OptionsState extends FlxState {
                 // Volume is adjusted using LEFT and RIGHT keys
                 return;
             case 1:
-                FlxG.sound.play(Paths.sound('pingas'));
+                pingas.play();
                 return;
             case 2:
                 // Resolution is adjusted using LEFT and RIGHT keys
