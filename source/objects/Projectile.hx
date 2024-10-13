@@ -9,10 +9,11 @@ class Projectile extends FlxSprite {
     private var speed:Float = 200; // Speed of the projectile
     private var damage:Int = 1; // Damage this projectile deals
 
-    public function new(X:Float, Y:Float, Target:Bloon) {
+    public function new(X:Float, Y:Float, Target:Bloon, SetDamage:Int) {
         super(X, Y);
         makeGraphic(8, 8, FlxColor.YELLOW);
         target = Target;
+        damage = SetDamage;
     }
 
     override public function update(elapsed:Float):Void {

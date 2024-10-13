@@ -8,6 +8,7 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 class WaterTower extends FlxSprite {
     public var fireRate:Float = 1.0; // Time in seconds between shots
     private var timeSinceLastShot:Float = 0;
+    public var damage:Int = 1;
     private var projectiles:FlxTypedGroup<Dynamic>; // Accept both types of projectiles
 
     public function new(X:Float, Y:Float, projectilesGroup:FlxTypedGroup<Dynamic>) {
@@ -53,7 +54,7 @@ class WaterTower extends FlxSprite {
 
     private function shoot(target:Bloon):Void {
         var projectile:Dynamic;
-        projectile = new Projectile(x, y, target);
+        projectile = new Projectile(x, y, target, damage);
         projectiles.add(projectile);
     }
 }

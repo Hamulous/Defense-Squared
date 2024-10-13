@@ -4,9 +4,14 @@ import flixel.FlxSprite;
 import flixel.util.FlxColor;
 import flixel.math.FlxPoint;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import utils.Upgrade;
 
 class Tower extends FlxSprite {
+    public var level:Int = 1;
+    public var upgrades:Array<Upgrade>;
+    public var damage:Int = 1;
     public var fireRate:Float = 1.0; // Time in seconds between shots
+    public var range:Float = 100;
     private var timeSinceLastShot:Float = 0;
     private var projectiles:FlxTypedGroup<Dynamic>; // Accept both types of projectiles
 
@@ -14,6 +19,11 @@ class Tower extends FlxSprite {
         super(X, Y);
         makeGraphic(32, 32, FlxColor.BLUE);
         projectiles = projectilesGroup;
+
+        upgrades = [
+            new Upgrade(100, 2, 120, 0.8), // Level 2: cost, newDamage, newRange, newFireRate
+            new Upgrade(200, 3, 150, 0.6)  // Level 3
+        ];
     }
     
     public function checkCollision(bloons:FlxTypedGroup<Bloon>, elapsed:Float):Void {
@@ -21,7 +31,7 @@ class Tower extends FlxSprite {
 
         if (timeSinceLastShot >= fireRate) {
             var target:Bloon = findClosestBloon(bloons);
-            if (target != null && calculateDistance(new FlxPoint(x, y), target) < 100) {
+            if (target != null && calculateDistance(new FlxPoint(x, y), target) < range) {
                 shoot(target);
                 timeSinceLastShot = 0;
             }
@@ -53,7 +63,27 @@ class Tower extends FlxSprite {
 
     private function shoot(target:Bloon):Void {
         var projectile:Dynamic;
-        projectile = new Projectile(x, y, target);
+        projectile = new Projectile(x, y, target, damage);
         projectiles.add(projectile);
+    }
+
+    public function upgradeTower():Bool {
+        if (level < upgrades.length && states.PlayState.instance.money >= upgrades[level - 1].cost) {
+            var upgrade:Upgrade = upgrades[level - 1];
+            damage = upgrade.newDamage;
+            range = upgrade.newRange;
+            fireRate = upgrade.newFireRate;
+            states.PlayState.instance.money -= upgrade.cost;
+            level++;
+             // Change the tower's sprite for the new level
+            switch(level) {
+                case 2:
+                    replaceColor(FlxColor.BLUE, FlxColor.CYAN);
+                case 3:
+                    replaceColor(FlxColor.CYAN, FlxColor.PINK);
+            }
+            return true;
+        }
+        return false;
     }
 }

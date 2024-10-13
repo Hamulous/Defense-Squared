@@ -12,6 +12,7 @@ import flixel.text.FlxText;
 import objects.*;
 import utils.Wave;
 import utils.Grid;
+import utils.Upgrade;
 import haxe.Json;
 import openfl.utils.Assets;
 
@@ -51,6 +52,8 @@ class PlayState extends FlxState {
     private var waterTowerSprite:FlxSprite;
     private var sniperTowerSprite:FlxSprite;
     private var beeKeeperTowerSprite:FlxSprite;
+
+    public var upgradeText:FlxText;
 
     override public function create():Void {
         instance = this;
@@ -95,6 +98,9 @@ class PlayState extends FlxState {
 
         add(livesText);
         add(moneyText);
+
+        upgradeText = new FlxText(10, 10, 200, "", 16);
+        add(upgradeText);
 
         // Create UI sprites for towers
         createTowerSprites();
@@ -207,6 +213,28 @@ class PlayState extends FlxState {
         // Check for collisions between towers and bloons
         for (tower in towers) {
             tower.checkCollision(bloons, elapsed);
+        }
+
+        if (FlxG.mouse.justPressedRight) {
+            var tower:Tower = getTowerAt(FlxG.mouse.x, FlxG.mouse.y);
+            if (tower != null) {
+                // Upgrade the tower if possible
+                if (tower.upgradeTower()) {
+                    trace("Tower upgraded to level " + tower.level);
+                } else {
+                   trace("Not enough money or max level reached");
+                }
+            }
+        }
+
+        // Checking if a tower is clicked and display its next upgrade
+        var tower:Tower = getTowerAt(FlxG.mouse.x, FlxG.mouse.y);
+        if (tower != null && tower.level < tower.upgrades.length) {
+            var nextUpgrade:Upgrade = tower.upgrades[tower.level - 1];
+            upgradeText.text = "Upgrade: Cost: " + nextUpgrade.cost + "\nDamage: " + nextUpgrade.newDamage;
+            upgradeText.setPosition(tower.x + 50, tower.y - 50);
+        } else {
+            upgradeText.text = "";
         }
 
         handleWaves(elapsed);
@@ -341,5 +369,14 @@ class PlayState extends FlxState {
         dragTower = new FlxSprite(FlxG.mouse.x, FlxG.mouse.y);
         dragTower.makeGraphic(32, 32, 0x55ffffff); // Semi-transparent white for dragging
         add(dragTower);
+    }
+
+    public function getTowerAt(x:Float, y:Float):Tower {
+        for (tower in towers) {
+            if (tower.overlapsPoint(new FlxPoint(x, y))) {
+                return tower;
+            }
+        }
+        return null;
     }
 }
