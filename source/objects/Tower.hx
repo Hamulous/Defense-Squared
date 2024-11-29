@@ -17,12 +17,16 @@ class Tower extends FlxSprite {
 
     public function new(X:Float, Y:Float, projectilesGroup:FlxTypedGroup<Dynamic>) {
         super(X, Y);
-        makeGraphic(32, 32, FlxColor.BLUE);
+        makeGraphic(32, 32, FlxColor.WHITE);
         projectiles = projectilesGroup;
+
+        replaceColor(FlxColor.WHITE, FlxColor.BLUE);
+        level = 1;
 
         upgrades = [
             new Upgrade(100, 2, 120, 0.8), // Level 2: cost, newDamage, newRange, newFireRate
-            new Upgrade(200, 3, 150, 0.6)  // Level 3
+            new Upgrade(200, 3, 150, 0.6),  // Level 3
+            new Upgrade(200, 3, 150, 0.6),  // Level 3
         ];
     }
     
