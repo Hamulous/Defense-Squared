@@ -26,6 +26,7 @@ class PlayState extends FlxState {
     private var moneyDrops:FlxTypedGroup<MoneyDrop>;
     private var bees:FlxTypedGroup<Bee>;
     private var waypoints:Array<FlxPoint>;
+    private var rangeIndicators:FlxTypedGroup<FlxSprite>;
 
     private var waves:Array<Wave>;
     private var currentWaveIndex:Int = 0;
@@ -52,6 +53,7 @@ class PlayState extends FlxState {
     private var waterTowerSprite:FlxSprite;
     private var sniperTowerSprite:FlxSprite;
     private var beeKeeperTowerSprite:FlxSprite;
+    private var meleeTowerSprite:FlxSprite;
 
     public var upgradeText:FlxText;
 
@@ -83,10 +85,12 @@ class PlayState extends FlxState {
         sniperProjectiles = new FlxTypedGroup<SniperProjectile>();
         moneyDrops = new FlxTypedGroup<MoneyDrop>();
         bees = new FlxTypedGroup<Bee>();
+        rangeIndicators = new FlxTypedGroup<FlxSprite>();
 
         livesText = new FlxText(10, 10, 200, "Lives: " + lives, 16);
         moneyText = new FlxText(10, 40, 200, "Money: " + money, 16);
 
+        add(rangeIndicators);
         add(bloons);
         add(towers);
         add(projectiles);
@@ -200,6 +204,14 @@ class PlayState extends FlxState {
                     grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
                     dragging = false;
                     dragTower.kill();
+                } else if (towerType == "Melee" && grid.isTileAvailable(Std.int(gridPos.x), Std.int(gridPos.y)) && money >= 200) {
+                    money -= 200;
+                    var meleeTower = new MeleeTower(FlxG.mouse.x, FlxG.mouse.y);
+                    towers.add(meleeTower);
+                    meleeTower.drawRange(rangeIndicators);
+                    grid.setTileType(Std.int(gridPos.x), Std.int(gridPos.y), TileType.OCCUPIED);
+                    dragging = false;
+                    dragTower.kill();
                 } else {
                     // Invalid placement, cancel dragging
                     dragging = false;
@@ -212,8 +224,20 @@ class PlayState extends FlxState {
 
         // Check for collisions between towers and bloons
         for (tower in towers) {
-            tower.checkCollision(bloons, elapsed);
+            if (Std.is(tower, MeleeTower)) {
+                (cast tower : MeleeTower).checkAndAttack(bloons, elapsed);
+            } else {
+                tower.checkCollision(bloons, elapsed);
+            }
+           
         }
+
+        /*// Check and attack bloons for all melee towers
+        for (tower in towers) {
+            if (Std.is(tower, MeleeTower)) {
+                (cast tower : MeleeTower).checkAndAttack(bloons, elapsed);
+            }
+        }*/
 
         if (FlxG.mouse.justPressedRight) {
             var tower:Tower = getTowerAt(FlxG.mouse.x, FlxG.mouse.y);
@@ -343,6 +367,11 @@ class PlayState extends FlxState {
         beeKeeperTowerSprite.scrollFactor.set();
         beeKeeperTowerSprite.makeGraphic(48, 48, 0xFFB22222);
         add(beeKeeperTowerSprite);
+
+        meleeTowerSprite = new FlxSprite(450, FlxG.height - 50);
+        meleeTowerSprite.scrollFactor.set();
+        meleeTowerSprite.makeGraphic(48, 48, 0xFF54204f);
+        add(meleeTowerSprite);
     }
 
     private function checkTowerSelection():Void {
@@ -360,6 +389,8 @@ class PlayState extends FlxState {
             startDraggingTower("Sniper");
         } else if (beeKeeperTowerSprite.overlapsPoint(FlxG.mouse.getWorldPosition()) && FlxG.mouse.justPressed) {
             startDraggingTower("BeeKeeper");
+        } else if (meleeTowerSprite.overlapsPoint(FlxG.mouse.getWorldPosition()) && FlxG.mouse.justPressed) {
+            startDraggingTower("Melee");
         }
     }
 
